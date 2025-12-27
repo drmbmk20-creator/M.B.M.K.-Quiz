@@ -1,0 +1,9 @@
+{
+  "type": "clinical_case",
+  "data": [
+    {
+      "q": "A 55-year-old male with a history of hypertension and smoking presents to the Emergency Department complaining of severe, crushing substernal chest pain that started 1 hour ago while gardening. The pain radiates to his left jaw and shoulder. He reports associated nausea and diaphoresis.\n\nOn physical examination:\nBP: 150/95 mmHg, HR: 104 bpm, RR: 22/min, O2 Sat: 96% on RA.\nCardiac auscultation reveals an S4 gallop but no murmurs. Lungs are clear to auscultation.\n\nECG reveals ST-segment elevation in leads II, III, and aVF with reciprocal ST depression in leads I and aVL.",
+      "diagnosis": "Diagnosis: Acute Inferior Wall Myocardial Infarction (STEMI).\n\nExplanation & Plan:\n1. The ECG findings (ST elevation in II, III, aVF) are classic for an inferior wall MI, which involves the Right Coronary Artery (RCA) in 80% of cases.\n2. Immediate Management: Activate PCI team (Door-to-balloon time < 90 mins). Administer Aspirin (300mg chewed) and a P2Y12 inhibitor (e.g., Clopidogrel/Ticagrelor).\n3. Caution: Nitrates should be used with extreme caution or avoided in inferior MI until right ventricular involvement is ruled out, as they can cause severe hypotension due to preload reduction."
+    }
+  ]
+}
