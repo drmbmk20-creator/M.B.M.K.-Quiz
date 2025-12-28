@@ -1,0 +1,37 @@
+[
+  {
+    "q": "What is the pathognomonic clinical sign of severe Cholera?",
+    "a": ["Bloody diarrhea", "Rice-water stool", "Bilious vomiting", "High-grade fever"],
+    "c": 1
+  },
+  {
+    "q": "Which Blood Group is known to be more susceptible to V. cholerae infection?",
+    "a": ["Blood Group A", "Blood Group B", "Blood Group AB", "Blood Group O"],
+    "c": 3
+  },
+  {
+    "q": "What is the primary mechanism of action of the Cholera Toxin (A subunit)?",
+    "a": ["Inhibition of protein synthesis", "Activation of adenylate cyclase", "Destruction of epithelial cells", "Blocking of sodium channels"],
+    "c": 1
+  },
+  {
+    "q": "What is the fluid of choice for rehydrating a patient in hypovolemic shock due to Cholera?",
+    "a": ["Normal Saline", "5% Dextrose", "Ringer's Lactate", "Half-Normal Saline"],
+    "c": 2
+  },
+  {
+    "q": "Which antibiotic is considered first-line treatment for Cholera in adults?",
+    "a": ["Ciprofloxacin", "Doxycycline", "Azithromycin", "Amoxicillin"],
+    "c": 1
+  },
+  {
+    "q": "The pathognomonic 'washerwoman’s hands' sign in Cholera indicates:",
+    "a": ["Electrolyte imbalance", "Severe dehydration", "Secondary infection", "Vitamin deficiency"],
+    "c": 1
+  },
+  {
+    "q": "What is the gold standard for laboratory diagnosis of Cholera?",
+    "a": ["Stool culture on TCBS agar", "Rapid dipstick test", "Blood culture", "Abdominal X-ray"],
+    "c": 0
+  }
+]
