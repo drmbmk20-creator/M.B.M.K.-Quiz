@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M.B.M.K. Professional System</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon.png">
+    <meta name="theme-color" content="#06b6d4">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: { bg: '#0f172a', card: '#1e293b', text: '#f1f5f9' }
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'Cairo', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+            background: radial-gradient(circle at top right, #f0fdfa, #e0f2fe); 
+            min-height: 100vh; 
+            color: #1e293b;
+            transition: color 0.5s ease;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        #dark-mode-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, #0f172a, #112631);
+            z-index: -1; 
+            pointer-events: none;
+            will-change: clip-path; 
+            clip-path: circle(0px at calc(100% - 3.5rem) 3.5rem);
+            transition: clip-path 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .dark #dark-mode-overlay { clip-path: circle(150% at calc(100% - 3.5rem) 3.5rem); }
+        .dark body { color: #e2e8f0; }
+        
+        .glass-card { 
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+        }
+
+        .dark .glass-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-teal { background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%); }
+        .btn-cyan { background: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%); }
+        
+        .correct-opt { background: #ccfbf1 !important; border: 2px solid #14b8a6 !important; color: #0f766e !important; }
+        .wrong-opt { background: #fee2e2 !important; border: 2px solid #ef4444 !important; }
+
+        .dark .correct-opt { background: #064e3b !important; border-color: #34d399 !important; color: #ecfdf5 !important; }
+        .dark .wrong-opt { background: #7f1d1d !important; border-color: #f87171 !important; color: #fef2f2 !important; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-section { animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+
+        .timer-bar { transition: width 1s linear, background-color 1s ease; }
+
+        #star-container { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; }
+        .star {
+            position: absolute;
+            background: white; border-radius: 50%;
+            box-shadow: 0 0 4px rgba(255, 255, 255, 0.8);
+            animation: twinkle infinite ease-in-out alternate;
+        }
+        @keyframes twinkle { 0% { opacity: 0.3; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1.2); } }
+
+        /* Definition Popup Styles */
+        #definition-popup {
+            display: none;
+            position: fixed;
+            z-index: 200;
+            width: 300px;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e2e8f0;
+            overflow: hidden;
+            font-size: 0.875rem;
+            animation: slideUp 0.3s ease-out;
+        }
+        .dark #definition-popup {
+            background: #1e293b;
+            border-color: #334155;
+            color: #f1f5f9;
+        }
+        #definition-header {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .dark #definition-header {
+            background: #0f172a;
+            border-color: #334155;
+        }
+        #definition-body {
+            padding: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body class="p-4 text-slate-800 dark:text-slate-100 selection:bg-cyan-200 dark:selection:bg-cyan-900">
+
+    <div id="dark-mode-overlay"><div id="star-container"></div></div>
+
+    <button id="themeBtn" onclick="toggleDarkMode()" class="fixed top-6 right-6 z-[110] w-12 h-12 flex items-center justify-center rounded-full bg-white/80 dark:bg-slate-800/80 backdrop-blur shadow-xl hover:scale-105 active:scale-95 transition-transform border border-slate-200 dark:border-slate-700 group text-slate-600 dark:text-yellow-400">
+        <span id="themeIcon" class="group-hover:rotate-12 transition-transform">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" />
+            </svg>
+        </span>
+    </button>
+
+    <div id="customAlert" class="hidden fixed top-10 left-1/2 -translate-x-1/2 z-[130] px-8 py-3 rounded-2xl shadow-2xl font-bold animate-section flex items-center gap-3"></div>
+
+    <div id="mainMenu" class="max-w-6xl mx-auto mt-8 animate-section relative z-10 pb-20">
+        
+        <div class="text-center mb-16 pt-10">
+            <h1 class="text-6xl md:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-500 dark:from-cyan-400 dark:to-teal-400 tracking-tighter mb-4">M.B.M.K.</h1>
+            <p class="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-[0.5em] text-[10px]">Medical Assessment Portal</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-20 px-4">
+            <div class="space-y-6">
+                
+                <div class="flex items-center gap-4 border-b-2 border-cyan-500 dark:border-cyan-700 pb-4 mb-6">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-cyan-100 dark:bg-cyan-900 text-cyan-600 dark:text-cyan-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" /></svg>
+                    </span>
+                    <h2 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-wider">MCQ Exams</h2>
+                </div>
+                
+                <div id="mcqList" class="grid grid-cols-1 gap-4"></div>
+            </div>
+
+            <div class="space-y-6">
+                <div class="flex items-center gap-4 border-b-2 border-teal-500 dark:border-teal-700 pb-4 mb-6">
+                    <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" /></svg>
+                    </span>
+                    <h2 class="text-2xl font-black text-slate-800 dark:text-white uppercase tracking-wider">Clinical Cases</h2>
+                </div>
+                <div id="casesList" class="grid grid-cols-1 gap-4"></div>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap justify-center gap-4 pt-8">
+            <button onclick="showAdmin()" class="flex items-center gap-2 bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                Console
+            </button>
+            <button onclick="toggleNewsModal()" class="flex items-center gap-2 bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all text-cyan-600 dark:text-cyan-400 font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                Updates
+            </button>
+            <button onclick="toggleSupportModal()" class="flex items-center gap-2 bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all text-teal-600 dark:text-teal-400 font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+                Support
+            </button>
+        </div>
+    </div>
+
+    <div id="newsModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-3xl p-8 shadow-2xl animate-section relative border border-slate-100 dark:border-slate-700">
+            <button onclick="toggleNewsModal()" class="absolute top-6 right-6 p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-red-50 text-slate-400 hover:text-red-500 transition-colors">✕</button>
+            
+            <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-6 flex items-center gap-3">
+                <span class="text-cyan-500">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-8 h-8"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" /></svg>
+                </span> Latest Updates
+            </h3>
+            
+            <div id="newsContent" class="space-y-4 max-h-[300px] overflow-y-auto custom-scrollbar pr-2">
+                <div class="text-center py-4">
+                    <div class="inline-block h-6 w-6 animate-spin rounded-full border-2 border-cyan-500 border-r-transparent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="supportModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[140] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-md rounded-[2rem] p-8 shadow-2xl animate-section relative overflow-hidden border border-slate-100 dark:border-slate-700">
+            <div class="absolute top-0 left-0 w-full h-32 bg-gradient-to-br from-cyan-500 to-teal-600 opacity-10 dark:opacity-20"></div>
+            
+            <button onclick="toggleSupportModal()" class="absolute top-6 right-6 z-10 p-2 bg-white/50 dark:bg-black/20 rounded-full hover:bg-red-500 hover:text-white transition-all backdrop-blur-sm">✕</button>
+            
+            <div class="relative z-10 text-center mt-4">
+                <div class="w-20 h-20 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-2xl mx-auto flex items-center justify-center text-4xl shadow-lg shadow-cyan-500/30 mb-6 text-white">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-10 h-10"><path stroke-linecap="round" stroke-linejoin="round" d="M8.625 12a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H8.25m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0H12m4.125 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 01-2.555-.337A5.972 5.972 0 015.41 20.97a5.969 5.969 0 01-.474-.065 4.48 4.48 0 00.978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25z" /></svg>
+                </div>
+                <h3 class="text-2xl font-black text-slate-800 dark:text-white mb-2">Need Help?</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mb-8 px-6">Contact the administration team directly via Telegram for support or feedback.</p>
+                
+                <div onclick="copyToClipboard('@i_mbm')" class="cursor-pointer group relative bg-slate-50 dark:bg-slate-800 rounded-2xl p-5 border-2 border-dashed border-slate-200 dark:border-slate-700 hover:border-cyan-400 dark:hover:border-cyan-500 transition-all">
+                    <p class="text-[10px] font-bold uppercase text-slate-400 mb-1 tracking-widest">Telegram Handle</p>
+                    <div class="text-xl font-bold text-slate-800 dark:text-white font-mono flex items-center justify-center gap-2">
+                        @i_mbm
+                    </div>
+                    <div class="absolute inset-0 flex items-center justify-center bg-cyan-500/90 text-white font-bold rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity backdrop-blur-sm">
+                        Tap to Copy
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="adminView" class="hidden max-w-3xl mx-auto mt-8 animate-section relative z-10 pb-20">
+        <div class="glass-card p-8 rounded-[2.5rem] shadow-2xl">
+            <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
+                <h2 class="text-2xl font-black text-slate-800 dark:text-white tracking-tight">Content Architect</h2>
+                <button onclick="showMenu()" class="p-2 bg-slate-100 dark:bg-slate-800 text-slate-500 rounded-xl hover:bg-red-500 hover:text-white transition-all">✕</button>
+            </div>
+            
+            <div class="space-y-5">
+                <div class="flex gap-2 bg-slate-100 dark:bg-black/20 p-1.5 rounded-xl mb-6">
+                    <button onclick="setAdminMode('mcq')" id="btnModeMcq" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all bg-white dark:bg-slate-700 shadow-sm text-cyan-700 dark:text-cyan-400">MCQ</button>
+                    <button onclick="setAdminMode('case')" id="btnModeCase" class="flex-1 py-3 rounded-lg text-xs font-bold transition-all text-slate-400 hover:text-slate-600">Clinical Case</button>
+                </div>
+
+                <textarea id="qInput" placeholder="Enter Question or Case Scenario..." class="w-full p-5 border-2 border-transparent focus:border-cyan-300 rounded-2xl bg-white dark:bg-slate-800 dark:text-white shadow-sm focus:ring-0 outline-none font-medium h-32 resize-none transition-all"></textarea>
+                
+                <div id="mcqInputs" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <input id="o0" type="text" placeholder="Option A" class="p-4 bg-white dark:bg-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 focus:border-cyan-400 outline-none transition-colors">
+                    <input id="o1" type="text" placeholder="Option B" class="p-4 bg-white dark:bg-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 focus:border-cyan-400 outline-none transition-colors">
+                    <input id="o2" type="text" placeholder="Option C" class="p-4 bg-white dark:bg-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 focus:border-cyan-400 outline-none transition-colors">
+                    <input id="o3" type="text" placeholder="Option D" class="p-4 bg-white dark:bg-slate-800 dark:text-white rounded-xl border border-slate-200 dark:border-slate-700 focus:border-cyan-400 outline-none transition-colors">
+                </div>
+
+                <select id="cInput" class="w-full p-4 bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white rounded-xl font-bold outline-none cursor-pointer border border-slate-200 dark:border-slate-700">
+                    <option value="0">Correct: Option A</option>
+                    <option value="1">Correct: Option B</option>
+                    <option value="2">Correct: Option C</option>
+                    <option value="3">Correct: Option D</option>
+                </select>
+
+                <div id="caseInputs" class="hidden">
+                     <textarea id="diagnosisInput" placeholder="Detailed Diagnosis, Plan & Explanation..." class="w-full p-5 border-2 border-transparent focus:border-teal-300 rounded-2xl bg-white dark:bg-slate-800 dark:text-white shadow-sm focus:ring-0 outline-none font-medium h-32 resize-none transition-all"></textarea>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4 pt-4">
+                    <button id="saveBtn" onclick="addEntry()" class="bg-slate-800 dark:bg-white text-white dark:text-slate-900 py-4 rounded-xl font-black shadow-lg active:scale-95 transition-transform hover:bg-slate-900 dark:hover:bg-slate-200">SAVE</button>
+                    <button onclick="startQuiz()" class="btn-cyan text-white py-4 rounded-xl font-black shadow-lg active:scale-95 transition-transform">PREVIEW</button>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3 pt-6 mt-6 border-t border-slate-200 dark:border-slate-700">
+                    <button onclick="exportQuiz()" class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-3 rounded-lg font-bold text-[10px] uppercase hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Export JSON</button>
+                    <input type="file" id="importFile" onchange="importQuiz(this)" class="hidden">
+                    <button onclick="document.getElementById('importFile').click()" class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-3 rounded-lg font-bold text-[10px] uppercase hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Import JSON</button>
+                </div>
+
+                <div class="mt-8">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Current Session</h3>
+                    <div id="questionsReview" class="grid grid-cols-1 gap-3 max-h-[200px] overflow-y-auto custom-scrollbar"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="quizView" class="hidden fixed inset-0 bg-slate-50 dark:bg-slate-900 z-40 overflow-y-auto custom-scrollbar p-4 md:p-8">
+        <button onclick="toggleExitModal()" class="fixed top-6 right-6 z-50 p-3 bg-white dark:bg-slate-800 shadow-md hover:bg-red-500 hover:text-white rounded-xl transition-all font-bold text-xs border border-slate-200 dark:border-slate-700">EXIT</button>
+        <div id="quizContent" class="max-w-4xl w-full mx-auto py-12 relative z-20"></div>
+    </div>
+
+    <div id="exitModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[160] flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-3xl p-6 shadow-2xl animate-section border border-slate-100 dark:border-slate-700 text-center">
+            <h3 class="text-xl font-black text-slate-800 dark:text-white mb-2">Exit Exam?</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-6">Your progress will be lost and you will return to the main menu.</p>
+            <div class="grid grid-cols-2 gap-3">
+                <button onclick="toggleExitModal()" class="py-3 rounded-xl font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancel</button>
+                <button onclick="showMenu(); toggleExitModal()" class="py-3 rounded-xl font-bold bg-red-500 text-white shadow-lg shadow-red-500/30 hover:bg-red-600 transition-colors">Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="resultView" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 flex items-center justify-center p-6">
+        <div class="bg-white dark:bg-slate-900 w-full max-w-sm rounded-[2.5rem] p-10 text-center shadow-2xl animate-section border border-white/10 relative overflow-hidden">
+            <div id="resultConfetti" class="absolute top-0 left-0 w-full h-full pointer-events-none"></div>
+            <div id="resultIcon" class="text-7xl mb-6 relative z-10"></div>
+            <h2 class="text-2xl font-black text-slate-800 dark:text-white mb-2 relative z-10" id="resultTitle"></h2>
+            <div class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 to-teal-500 mb-6 relative z-10" id="finalScore"></div>
+            <p id="resultMsg" class="text-slate-500 dark:text-slate-400 font-medium mb-10 text-sm leading-relaxed relative z-10"></p>
+            <button onclick="showMenu()" class="relative z-10 w-full btn-cyan text-white py-4 rounded-xl font-bold shadow-lg active:scale-95 transition-transform">RETURN TO MENU</button>
+        </div>
+    </div>
+
+    <div id="definition-popup">
+        <div id="definition-header">
+            <span id="def-word" class="text-cyan-600 dark:text-cyan-400">Term</span>
+            <button onclick="hideDefinition()" class="text-slate-400 hover:text-red-500">✕</button>
+        </div>
+        <div id="definition-body" class="text-slate-600 dark:text-slate-300">Loading...</div>
+        <div class="p-2 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-700 text-center">
+            <a id="def-link" href="#" target="_blank" class="text-[10px] font-bold text-teal-500 hover:underline uppercase tracking-wider">Open in NIH MedlinePlus</a>
+        </div>
+    </div>
+
+    <footer class="relative z-10 mt-20 border-t border-slate-200 dark:border-slate-700">
+        <div class="max-w-6xl mx-auto px-4 py-12">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                
+                <div class="text-center md:text-left">
+                    <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-teal-500 dark:from-cyan-400 dark:to-teal-400 mb-3">M.B.M.K.</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-4">
+                        Professional Medical Assessment Platform designed for healthcare professionals and students.
+                    </p>
+                    <div class="flex items-center justify-center md:justify-start gap-2 text-[10px] font-bold text-slate-400">
+                        <span class="px-2 py-1 bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400 rounded">v1.0</span>
+                        <span>•</span>
+                        <span>First Release</span>
+                    </div>
+                </div>
+
+                <div class="text-center md:text-right">
+                    <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 uppercase tracking-widest mb-4">Quick Links</h4>
+                    <div class="space-y-2">
+                        <button onclick="location.reload()" class="block mx-auto md:ml-auto md:mr-0 text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">Home</button>
+                        <button onclick="showAdmin()" class="block mx-auto md:ml-auto md:mr-0 text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">Console</button>
+                        <button onclick="toggleNewsModal()" class="block mx-auto md:ml-auto md:mr-0 text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">Updates</button>
+                        <button onclick="toggleSupportModal()" class="block mx-auto md:ml-auto md:mr-0 text-xs text-slate-500 dark:text-slate-400 hover:text-cyan-500 dark:hover:text-cyan-400 transition-colors">Support</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-8 border-t border-slate-200 dark:border-slate-700">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <p class="text-[10px] text-slate-400 dark:text-slate-500 text-center md:text-left">
+                        © 2025 M.B.M.K. All rights reserved. | Medical Assessment Platform
+                    </p>
+                    <div class="flex items-center gap-4 text-[10px] text-slate-400 dark:text-slate-500">
+                        <span class="hover:text-cyan-500 cursor-pointer transition-colors">Privacy Policy</span>
+                        <span>•</span>
+                        <span class="hover:text-cyan-500 cursor-pointer transition-colors">Terms of Service</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+   <script src="mbmk.js"></script>
+</body>
+</html>
