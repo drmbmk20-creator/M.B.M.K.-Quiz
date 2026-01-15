@@ -1235,17 +1235,14 @@ function initBarcodeScanner() {
 
 
 function onScanSuccess(decodedText) {
-    // ✅ لو القراءة شغالة، ما نسوي شي
     if (isProcessingQR) {
         console.log('⚠️ Already processing a QR code, ignoring...');
         return;
     }
     
     try {
-        // ✅ نعلّم إن القراءة بدت
         isProcessingQR = true;
         
-        // ✅ نوقف الـ Scanner فوراً
         if (html5QrCode && isScannerActive) {
             html5QrCode.stop().then(() => {
                 isScannerActive = false;
@@ -1254,7 +1251,16 @@ function onScanSuccess(decodedText) {
             });
         }
         
-        const examData = JSON.parse(decodedText);
+        // ✅ فك التشفير والضغط
+        let examData;
+        try {
+            // حاول تقرأ البيانات المضغوطة الجديدة
+            const decompressed = decodeURIComponent(escape(atob(decodedText)));
+            examData = JSON.parse(decompressed);
+        } catch (e) {
+            // لو فشل، يعني الكود قديم (JSON مباشر)
+            examData = JSON.parse(decodedText);
+        }
         
         isQrExam = true; 
 
@@ -1268,19 +1274,15 @@ function onScanSuccess(decodedText) {
             throw new Error("Invalid format");
         }
 
-        // ✅ اقفل الـ Modal
         closeBarcodeScanner();
-        
-        // ✅ صوت نجاح
         playSound('success');
         notify("Exam loaded successfully!", "teal");
         
-        // ✅ خلي الـ prompt يطلع بعد شوية
         setTimeout(() => {
             const name = prompt("Enter your name for the exam:");
             if (!name || name.trim() === '') {
                 notify("Name is required", "red");
-                isProcessingQR = false; // ✅ إعادة تعيين
+                isProcessingQR = false;
                 return;
             }
             studentName = name.trim();
@@ -1289,8 +1291,9 @@ function onScanSuccess(decodedText) {
         
     } catch (e) {
         console.error('QR parsing error:', e);
-        notify("Invalid QR Code", "red");
-        isProcessingQR = false; // ✅ إعادة تعيين عند الخطأ
+        notify("Invalid or corrupted QR Code", "red");
+        playSound('error');
+        isProcessingQR = false;
     }
 }
 function monitorConnection() {
