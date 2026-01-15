@@ -328,6 +328,12 @@ function shuffleAndEncrypt() {
 }
 
 function decryptQuestion(encryptedQ) {
+    // ✅ إضافة: تحقق من null/undefined
+    if (!encryptedQ) {
+        console.error('Question is null or undefined');
+        return null;
+    }
+    
     if (!encryptedQ._encrypted) return encryptedQ;
     
     try {
@@ -346,11 +352,19 @@ function decryptQuestion(encryptedQ) {
         return decrypted;
     } catch (e) {
         console.error('Decryption error:', e);
-        terminateExam("🚫 Data tampering detected");
-        return null;
+        
+        // ✅ تحسين: بدل ما نوقف الامتحان، نرجع السؤال الأصلي
+        notify('⚠️ Question loading issue, please continue', 'red');
+        
+        // إذا كان السؤال مشفّر بشكل خاطئ، حاول ترجع النسخة الأصلية
+        return {
+            q: encryptedQ.q || 'Error loading question',
+            a: encryptedQ.a || [],
+            c: 0,
+            diagnosis: encryptedQ.diagnosis
+        };
     }
 }
-
 function shuffleArray(array) {
     const newArray = [...array];
     for (let i = newArray.length - 1; i > 0; i--) {
@@ -510,6 +524,16 @@ function cleanupSecurity() {
     const styles = document.getElementById('security-styles');
     if (styles) styles.remove();
     
+    // ✅ إضافة: تنظيف مراقبة الاتصال
+    if (typeof connectionCheckInterval !== 'undefined' && connectionCheckInterval) {
+        clearInterval(connectionCheckInterval);
+        connectionCheckInterval = null;
+    }
+    if (typeof onlineCheckHandler !== 'undefined' && onlineCheckHandler) {
+        window.removeEventListener('online', onlineCheckHandler);
+        onlineCheckHandler = null;
+    }
+    
     // إعادة تعيين المتغيرات
     violations = 0;
     tabSwitchCount = 0;
@@ -522,7 +546,6 @@ function cleanupSecurity() {
         document.exitFullscreen();
     }
 }
-
 // ═══════════════════════════════════════════════════════════
 // 📤 تصدير الوظائف
 // ═══════════════════════════════════════════════════════════
