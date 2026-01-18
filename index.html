@@ -1618,14 +1618,37 @@
                     });
                 }
 
-                // ✅ فك التشفير والضغط
+                // ✅ 1. Check if it's a Server URL QR
+                if (decodedText.includes('?ip=') && decodedText.includes('&exam=')) {
+                    notify("Server link detected! Connecting...", "cyan");
+
+                    try {
+                        const url = new URL(decodedText);
+                        const params = new URLSearchParams(url.search);
+
+                        // Update global server variables
+                        const ip = params.get('ip');
+                        const port = params.get('port') || '3000';
+                        const examId = params.get('exam');
+
+                        if (ip && examId) {
+                            // Update our global state
+                            window.location.search = `?ip=${ip}&port=${port}&exam=${examId}`;
+                            return; // Page will reload with new params and window.onload will handle it
+                        }
+                    } catch (e) {
+                        console.error('URL parse error:', e);
+                    }
+                }
+
+                // ✅ 2. Handle as Data QR (Legacy/Offline Data)
                 let examData;
                 try {
-                    // حاول تقرأ البيانات المضغوطة الجديدة
+                    // Try to read Base64 compressed data
                     const decompressed = decodeURIComponent(escape(atob(decodedText)));
                     examData = JSON.parse(decompressed);
                 } catch (e) {
-                    // لو فشل، يعني الكود قديم (JSON مباشر)
+                    // Fallback to raw JSON
                     examData = JSON.parse(decodedText);
                 }
 
