@@ -35,7 +35,7 @@ function initSecuritySystem() {
         return;
     }
 
-    // الأولوية العالية
+    // الأولوية العالية (للامتحانات عن بعد فقط)
     detectDevTools();
     preventCopying();
     monitorTabSwitch();
@@ -45,7 +45,7 @@ function initSecuritySystem() {
     enforceFullscreen();
     addWatermark();
 
-    // تشفير البيانات
+    // تشفير البيانات (للـ QR offline فقط)
     shuffleAndEncrypt();
 }
 

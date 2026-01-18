@@ -348,8 +348,9 @@
                 </svg>
                 Scan Exam Barcode
             </button>
-            <button onclick="showAdmin()"
-                class="flex items-center gap-2 bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+            <!-- Console button removed for Server-Only mode -->
+            <button onclick="showAdmin()" style="display: none;"
+                class="hidden flex items-center gap-2 bg-white dark:bg-slate-800 px-6 py-3 rounded-xl shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all text-slate-600 dark:text-slate-300 font-bold text-xs uppercase tracking-widest border border-slate-200 dark:border-slate-700">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                     stroke="currentColor" class="w-5 h-5">
                     <path stroke-linecap="round" stroke-linejoin="round"
@@ -1629,8 +1630,8 @@
                     });
                 }
 
-                // ✅ 1. Check if it's a Server URL QR
-                if (decodedText.includes('?ip=') && (decodedText.includes('&exam=') || decodedText.includes('?exam='))) {
+                // ✅ 1. Check if it's a Server URL QR (Updated Logic)
+                if (decodedText.startsWith('http') && decodedText.includes('examId=')) {
                     notify("Server link detected! Redirecting...", "cyan");
                     setTimeout(() => {
                         window.location.href = decodedText;
@@ -1665,16 +1666,9 @@
                 playSound('success');
                 notify("Exam loaded successfully!", "teal");
 
-                setTimeout(() => {
-                    const name = prompt("Enter your name for the exam:");
-                    if (!name || name.trim() === '') {
-                        notify("Name is required", "red");
-                        isProcessingQR = false;
-                        return;
-                    }
-                    studentName = name.trim();
-                    startQuiz();
-                }, 300);
+                // ✅ لا نطلب الاسم للامتحانات العادية (GitHub/Offline)
+                studentName = "Guest Student";
+                setTimeout(startQuiz, 300);
 
             } catch (e) {
                 console.error('QR parsing error:', e);
@@ -1905,8 +1899,8 @@
         window.addEventListener('offline', updateOnlineStatus);
 
         window.onload = async () => {
-            // Check if coming from server QR code
-            if (isLocalServerExam) {
+            // Check if coming from server QR code with an actual exam ID
+            if (isLocalServerExam && EXAM_ID) {
                 notify('Server exam detected...', 'cyan');
 
                 const name = prompt("Enter your name for the exam:");
