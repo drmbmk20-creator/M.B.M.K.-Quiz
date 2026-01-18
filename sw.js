@@ -1,7 +1,10 @@
 const CACHE_NAME = 'mbmk-v1';
 const urlsToCache = [
     './',
-    './index.html',
+    './mbmk.html',
+    './gestures.js',
+    './Security.js',
+    './generator.js',
     'https://cdn.tailwindcss.com',
     'https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap',
     'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
