@@ -677,14 +677,14 @@
         const urlParams = new URLSearchParams(window.location.search);
         const SERVER_IP = urlParams.get('ip');
         const SERVER_PORT = urlParams.get('port') || '3000';
-        const EXAM_ID = urlParams.get('exam');
-        const SERVER_URL = SERVER_IP ? `http://${SERVER_IP}:${SERVER_PORT}` : null;
-
-        // ✅ كشف تلقائي للسيرفر المحلي حتى بدون معلمات URL
-        // يشمل: 192.168.x.x, 10.x.x.x, 172.16-31.x.x (Private IP ranges)
+        const EXAM_ID = urlParams.get('exam') || urlParams.get('examId');
         const currentHost = window.location.hostname;
         const isPrivateIP = /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(currentHost);
         const isLocalhost = currentHost === 'localhost' || currentHost === '127.0.0.1';
+
+        const SERVER_URL = SERVER_IP
+            ? `http://${SERVER_IP}:${SERVER_PORT}`
+            : ((isPrivateIP || isLocalhost) ? window.location.origin : null);
 
         // isLocalServerExam = true إذا كان على سيرفر محلي (IP خاص أو localhost)
         let isLocalServerExam = (SERVER_IP && EXAM_ID) || isPrivateIP || isLocalhost;
