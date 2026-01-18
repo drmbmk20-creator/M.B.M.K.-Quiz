@@ -1877,7 +1877,17 @@
 
                 } catch (error) {
                     console.error('Gesture control error:', error);
-                    notify('Camera access denied', 'red');
+
+                    const isInsecure = location.protocol === 'http:' &&
+                        location.hostname !== 'localhost' &&
+                        location.hostname !== '127.0.0.1';
+
+                    if (isInsecure) {
+                        notify('✋ Gestures disabled: Requires HTTPS or Localhost', 'orange');
+                        console.warn('MediaDevices.getUserMedia() requires HTTPS or localhost context.');
+                    } else {
+                        notify('🚫 Camera access denied', 'red');
+                    }
                 }
             } else {
                 gestureController.stop();

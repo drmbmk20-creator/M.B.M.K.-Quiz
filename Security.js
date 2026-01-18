@@ -23,6 +23,18 @@ function initSecuritySystem() {
 
     console.log('🔒 Security System Activated');
 
+    // ✅ تجاوز للسيرفر المحلي - لا نشغل معظم الأمان
+    const host = window.location.hostname;
+    const isLocal = host === 'localhost' || host === '127.0.0.1' ||
+        /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host);
+
+    if (isLocal) {
+        console.log('🔓 Local server detected - Security reduced');
+        // فقط Watermark للسيرفر المحلي
+        addWatermark();
+        return;
+    }
+
     // الأولوية العالية
     detectDevTools();
     preventCopying();
