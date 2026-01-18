@@ -20,19 +20,19 @@ let tabSwitchCount = 0;
 
 function initSecuritySystem() {
     if (!isQrExam) return;
-    
+
     console.log('🔒 Security System Activated');
-    
+
     // الأولوية العالية
     detectDevTools();
     preventCopying();
     monitorTabSwitch();
-    
+
     // الأولوية المتوسطة
     preventScreenshots();
     enforceFullscreen();
     addWatermark();
-    
+
     // تشفير البيانات
     shuffleAndEncrypt();
 }
@@ -44,22 +44,25 @@ function initSecuritySystem() {
 function detectDevTools() {
     const check = () => {
         if (!isExamActive) return;
-        
+
+        // Bypass for teacher local testing
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+
         const widthDiff = window.outerWidth - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
-        
-        if (widthDiff > SECURITY_CONFIG.DEVTOOLS_THRESHOLD || 
+
+        if (widthDiff > SECURITY_CONFIG.DEVTOOLS_THRESHOLD ||
             heightDiff > SECURITY_CONFIG.DEVTOOLS_THRESHOLD) {
             terminateExam("🚫 Developer Tools Detected - Exam Terminated");
         }
     };
-    
+
     setInterval(check, SECURITY_CONFIG.DEVTOOLS_CHECK_INTERVAL);
-    
+
     // كشف إضافي للكونسول
     const devtools = /./;
-    devtools.toString = function() {
-        if (isExamActive) {
+    devtools.toString = function () {
+        if (isExamActive && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
             terminateExam("🚫 Console Access Detected");
         }
         return '';
@@ -80,7 +83,7 @@ function preventCopying() {
             return false;
         }
     });
-    
+
     // منع القص
     document.addEventListener('cut', (e) => {
         if (isExamActive) {
@@ -89,7 +92,7 @@ function preventCopying() {
             return false;
         }
     });
-    
+
     // منع اللصق
     document.addEventListener('paste', (e) => {
         if (isExamActive) {
@@ -97,7 +100,7 @@ function preventCopying() {
             return false;
         }
     });
-    
+
     // منع التحديد
     document.addEventListener('selectstart', (e) => {
         if (isExamActive) {
@@ -105,7 +108,7 @@ function preventCopying() {
             return false;
         }
     });
-    
+
     // CSS إضافي
     const style = document.createElement('style');
     style.id = 'security-styles';
@@ -122,7 +125,7 @@ function preventCopying() {
         }
     `;
     document.head.appendChild(style);
-    
+
     // تفعيل الحماية
     if (isExamActive) {
         document.body.classList.add('exam-active');
@@ -138,7 +141,7 @@ function monitorTabSwitch() {
     document.addEventListener('visibilitychange', () => {
         if (isExamActive && document.hidden) {
             tabSwitchCount++;
-            
+
             if (tabSwitchCount === 1) {
                 notify('⚠️ WARNING 1/2: Do not leave this tab!', 'red');
                 playSound('error');
@@ -147,12 +150,12 @@ function monitorTabSwitch() {
             }
         }
     });
-    
+
     // كشف فقدان التركيز
     window.addEventListener('blur', () => {
         if (isExamActive) {
             notify('⚠️ Stay focused on the exam!', 'red');
-            
+
             // محاولة إرجاع التركيز
             setTimeout(() => {
                 if (isExamActive && !document.hasFocus()) {
@@ -161,7 +164,7 @@ function monitorTabSwitch() {
             }, 100);
         }
     });
-    
+
     // منع Alt+Tab (محاولة)
     document.addEventListener('keydown', (e) => {
         if (isExamActive && e.altKey && e.key === 'Tab') {
@@ -185,14 +188,14 @@ function preventScreenshots() {
             notify('📸 Screenshots are blocked!', 'red');
         }
     });
-    
+
     // منع اختصارات Screenshot
     document.addEventListener('keydown', (e) => {
         if (!isExamActive) return;
-        
+
         // Windows: Win+PrintScreen, Win+Shift+S
-        if (e.key === 'PrintScreen' || 
-           (e.metaKey && e.shiftKey && e.key.toLowerCase() === 's')) {
+        if (e.key === 'PrintScreen' ||
+            (e.metaKey && e.shiftKey && e.key.toLowerCase() === 's')) {
             e.preventDefault();
             addViolation('Screenshot shortcut blocked');
             notify('📸 Screenshots are disabled!', 'red');
@@ -206,7 +209,7 @@ function preventScreenshots() {
 
 function enforceFullscreen() {
     if (!isExamActive) return;
-    
+
     // طلب Fullscreen
     const requestFS = () => {
         if (document.documentElement.requestFullscreen) {
@@ -216,15 +219,15 @@ function enforceFullscreen() {
             });
         }
     };
-    
+
     requestFS();
-    
+
     // مراقبة الخروج من Fullscreen
     document.addEventListener('fullscreenchange', () => {
         if (isExamActive && !document.fullscreenElement) {
             addViolation('Exited fullscreen mode');
             notify('⚠️ Stay in fullscreen!', 'red');
-            
+
             // إعادة محاولة الدخول
             setTimeout(() => {
                 if (isExamActive && !document.fullscreenElement) {
@@ -233,7 +236,7 @@ function enforceFullscreen() {
             }, SECURITY_CONFIG.FULLSCREEN_RETRY_DELAY);
         }
     });
-    
+
     // منع Escape
     document.addEventListener('keydown', (e) => {
         if (isExamActive && e.key === 'Escape' && document.fullscreenElement) {
@@ -251,7 +254,7 @@ function addWatermark() {
     // إزالة القديم إن وُجد
     const old = document.getElementById('security-watermark');
     if (old) old.remove();
-    
+
     const watermark = document.createElement('div');
     watermark.id = 'security-watermark';
     watermark.style.cssText = `
@@ -270,16 +273,16 @@ function addWatermark() {
         line-height: 1.8;
         letter-spacing: 0.1em;
     `;
-    
+
     const now = new Date();
     const timestamp = now.toLocaleString('en-GB', {
         day: '2-digit',
-        month: '2-digit', 
+        month: '2-digit',
         year: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
     });
-    
+
     watermark.innerText = `${studentName}\n${timestamp}\nM.B.M.K. EXAM`;
     document.body.appendChild(watermark);
 }
@@ -290,22 +293,22 @@ function addWatermark() {
 
 function shuffleAndEncrypt() {
     if (!db || db.length === 0) return;
-    
+
     // خلط ترتيب الأسئلة
     db = shuffleArray(db);
-    
+
     // تشفير كل سؤال
     db = db.map((question, index) => {
         if (question.a && Array.isArray(question.a)) {
             // حفظ الجواب الصحيح قبل الخلط
             const correctAnswer = question.a[question.c];
-            
+
             // خلط الخيارات
             const shuffledOptions = shuffleArray([...question.a]);
-            
+
             // إيجاد الموقع الجديد للجواب الصحيح
             const newCorrectIndex = shuffledOptions.indexOf(correctAnswer);
-            
+
             // تشفير البيانات
             return {
                 q: btoa(unescape(encodeURIComponent(question.q))),
@@ -323,7 +326,7 @@ function shuffleAndEncrypt() {
         }
         return question;
     });
-    
+
     console.log('🔐 Data encrypted and shuffled');
 }
 
@@ -333,29 +336,29 @@ function decryptQuestion(encryptedQ) {
         console.error('Question is null or undefined');
         return null;
     }
-    
+
     if (!encryptedQ._encrypted) return encryptedQ;
-    
+
     try {
         const decrypted = {
             q: decodeURIComponent(escape(atob(encryptedQ.q))),
             a: encryptedQ.a ? encryptedQ.a.map(opt => decodeURIComponent(escape(atob(opt)))) : undefined,
             diagnosis: encryptedQ.diagnosis ? decodeURIComponent(escape(atob(encryptedQ.diagnosis))) : undefined
         };
-        
+
         // فك تشفير الجواب الصحيح
         if (encryptedQ._c) {
             const decryptedC = atob(encryptedQ._c);
             decrypted.c = parseInt(decryptedC.replace(SECURITY_CONFIG.SECRET_SALT, ''));
         }
-        
+
         return decrypted;
     } catch (e) {
         console.error('Decryption error:', e);
-        
+
         // ✅ تحسين: بدل ما نوقف الامتحان، نرجع السؤال الأصلي
         notify('⚠️ Question loading issue, please continue', 'red');
-        
+
         // إذا كان السؤال مشفّر بشكل خاطئ، حاول ترجع النسخة الأصلية
         return {
             q: encryptedQ.q || 'Error loading question',
@@ -380,10 +383,10 @@ function shuffleArray(array) {
 
 function addViolation(reason) {
     violations++;
-    
+
     const timestamp = new Date().toLocaleTimeString();
     console.warn(`⚠️ VIOLATION ${violations}/${SECURITY_CONFIG.MAX_VIOLATIONS} at ${timestamp}: ${reason}`);
-    
+
     // حفظ المخالفة
     const violationLog = JSON.parse(localStorage.getItem('violationLog') || '[]');
     violationLog.push({
@@ -393,7 +396,7 @@ function addViolation(reason) {
         count: violations
     });
     localStorage.setItem('violationLog', JSON.stringify(violationLog));
-    
+
     if (violations >= SECURITY_CONFIG.MAX_VIOLATIONS) {
         terminateExam(`🚫 Maximum violations (${SECURITY_CONFIG.MAX_VIOLATIONS}) - Last: ${reason}`);
     }
@@ -408,7 +411,7 @@ function terminateExam(reason) {
     if (typeof timerInterval !== 'undefined') {
         clearInterval(timerInterval);
     }
-    
+
     // حفظ سبب الإنهاء
     const terminationData = {
         reason: reason,
@@ -417,9 +420,9 @@ function terminateExam(reason) {
         violations: violations,
         tabSwitches: tabSwitchCount
     };
-    
+
     localStorage.setItem('examTerminated', JSON.stringify(terminationData));
-    
+
     // شاشة الإنهاء
     document.body.innerHTML = `
         <div style="position: fixed; 
@@ -499,10 +502,10 @@ function terminateExam(reason) {
             </p>
         </div>
     `;
-    
+
     // منع أي تفاعل
     document.body.style.pointerEvents = 'none';
-    
+
     // إعادة التوجيه بعد 8 ثواني
     setTimeout(() => {
         if (confirm('Exam terminated. Click OK to return to main menu.')) {
@@ -519,11 +522,11 @@ function cleanupSecurity() {
     // إزالة الـ Watermark
     const watermark = document.getElementById('security-watermark');
     if (watermark) watermark.remove();
-    
+
     // إزالة الـ Styles
     const styles = document.getElementById('security-styles');
     if (styles) styles.remove();
-    
+
     // ✅ إضافة: تنظيف مراقبة الاتصال
     if (typeof connectionCheckInterval !== 'undefined' && connectionCheckInterval) {
         clearInterval(connectionCheckInterval);
@@ -533,14 +536,14 @@ function cleanupSecurity() {
         window.removeEventListener('online', onlineCheckHandler);
         onlineCheckHandler = null;
     }
-    
+
     // إعادة تعيين المتغيرات
     violations = 0;
     tabSwitchCount = 0;
-    
+
     // إزالة class
     document.body.classList.remove('exam-active');
-    
+
     // الخروج من Fullscreen
     if (document.fullscreenElement) {
         document.exitFullscreen();
