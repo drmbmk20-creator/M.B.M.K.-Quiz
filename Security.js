@@ -45,8 +45,11 @@ function detectDevTools() {
     const check = () => {
         if (!isExamActive) return;
 
-        // Bypass for teacher local testing
-        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+        // ✅ تجاوز للسيرفر المحلي (localhost, 127.0.0.1, 192.168.x.x, 10.x.x.x, 172.16-31.x.x)
+        const host = window.location.hostname;
+        const isLocal = host === 'localhost' || host === '127.0.0.1' ||
+            /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host);
+        if (isLocal) return;
 
         const widthDiff = window.outerWidth - window.innerWidth;
         const heightDiff = window.outerHeight - window.innerHeight;
@@ -62,7 +65,10 @@ function detectDevTools() {
     // كشف إضافي للكونسول
     const devtools = /./;
     devtools.toString = function () {
-        if (isExamActive && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+        const host = window.location.hostname;
+        const isLocal = host === 'localhost' || host === '127.0.0.1' ||
+            /^(192\.168\.|10\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)/.test(host);
+        if (isExamActive && !isLocal) {
             terminateExam("🚫 Console Access Detected");
         }
         return '';
