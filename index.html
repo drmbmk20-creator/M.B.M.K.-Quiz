@@ -530,10 +530,6 @@
                         class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 py-3 rounded-lg font-bold text-[10px] uppercase hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Import
                         JSON</button>
                 </div>
-                <button onclick="generateBarcode()"
-                    class="bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-lg font-bold text-[10px] uppercase hover:opacity-90 transition-opacity">Gen
-                    Barcode</button>
-
                 <div class="mt-8">
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Current Session</h3>
                     <div id="questionsReview"
@@ -1710,6 +1706,8 @@
             isExamActive = false;
 
             setTimeout(() => {
+                // Fix loop: Clear URL params
+                window.history.replaceState({}, document.title, window.location.pathname);
                 location.reload();
             }, 5000);
         }
@@ -1777,6 +1775,8 @@
                         notify('Results submitted successfully!', 'teal');
 
                         setTimeout(() => {
+                            // Fix loop: Clear URL params
+                            window.history.replaceState({}, document.title, window.location.pathname);
                             showMenu();
                         }, 2000);
 
@@ -1902,9 +1902,15 @@
             if (isLocalServerExam && EXAM_ID) {
                 notify('Server exam detected...', 'cyan');
 
+                // Server Exam: Name is REQUIRED
                 const name = prompt("Enter your name for the exam:");
                 if (!name || name.trim() === '') {
                     notify("Name is required", "red");
+                    // Fix loop if they cancel:
+                    setTimeout(() => {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        location.reload();
+                    }, 2000);
                     return;
                 }
                 studentName = name.trim();
