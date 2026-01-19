@@ -1005,18 +1005,8 @@
                 currentMode = type;
                 db = data.data || (Array.isArray(data) ? data : []);
 
-                // Only prompt for name if it's a server exam (handled elsewhere) OR if explicitly needed.
-                // For GitHub/Local exams, we default to "Student" to avoid blocking.
-                if (isLocalServerExam) {
-                    const name = prompt("Enter your name for the exam:");
-                    if (!name || name.trim() === '') {
-                        notify("Name is required", "red");
-                        return;
-                    }
-                    studentName = name.trim();
-                } else {
-                    studentName = "Guest Student";
-                }
+                // GitHub Logic: Never prompt.
+                studentName = "Guest Student";
 
                 startQuiz();
             } catch (e) { notify("Error", "red"); }
@@ -1076,7 +1066,8 @@
                 cleanupSecurity();
             }
 
-            location.reload();
+            // Fix loop: Force navigation to clean URL path (removes ?examId=...)
+            window.location.href = window.location.pathname;
         }
 
         function addEntry() {
@@ -1713,10 +1704,9 @@
             isExamActive = false;
 
             setTimeout(() => {
-                // Fix loop: Clear URL params
-                window.history.replaceState({}, document.title, window.location.pathname);
-                location.reload();
-            }, 5000);
+                // Fix loop: Force navigation to clean URL (no params)
+                window.location.href = window.location.pathname;
+            }, 3000);
         }
         function preventTabSwitch() {
             let violations = 0;
@@ -1782,9 +1772,8 @@
                         notify('Results submitted successfully!', 'teal');
 
                         setTimeout(() => {
-                            // Fix loop: Clear URL params
-                            window.history.replaceState({}, document.title, window.location.pathname);
-                            showMenu();
+                            // Fix loop: Force navigation to clean URL
+                            window.location.href = window.location.pathname;
                         }, 2000);
 
                     } catch (error) {
@@ -1915,8 +1904,7 @@
                     notify("Name is required", "red");
                     // Fix loop if they cancel:
                     setTimeout(() => {
-                        window.history.replaceState({}, document.title, window.location.pathname);
-                        location.reload();
+                        window.location.href = window.location.pathname;
                     }, 2000);
                     return;
                 }
