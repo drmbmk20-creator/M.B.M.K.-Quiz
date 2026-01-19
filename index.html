@@ -802,7 +802,7 @@
 
             try {
                 notify('Connecting to exam server...', 'cyan');
-                const response = await fetch(`${SERVER_URL}/api/exam/${EXAM_ID}`, {
+                const response = await fetch(`${SERVER_URL}/api/student/exam/${EXAM_ID}`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -850,7 +850,7 @@
             };
 
             try {
-                const response = await fetch(`${SERVER_URL}/api/results`, {
+                const response = await fetch(`${SERVER_URL}/api/student/submit`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
@@ -880,7 +880,7 @@
 
             for (const result of pending) {
                 try {
-                    const response = await fetch(`${SERVER_URL}/api/results`, {
+                    const response = await fetch(`${SERVER_URL}/api/student/submit`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(result)
