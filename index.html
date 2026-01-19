@@ -1005,12 +1005,19 @@
                 currentMode = type;
                 db = data.data || (Array.isArray(data) ? data : []);
 
-                const name = prompt("Enter your name for the exam:");
-                if (!name || name.trim() === '') {
-                    notify("Name is required", "red");
-                    return;
+                // Only prompt for name if it's a server exam (handled elsewhere) OR if explicitly needed.
+                // For GitHub/Local exams, we default to "Student" to avoid blocking.
+                if (isLocalServerExam) {
+                    const name = prompt("Enter your name for the exam:");
+                    if (!name || name.trim() === '') {
+                        notify("Name is required", "red");
+                        return;
+                    }
+                    studentName = name.trim();
+                } else {
+                    studentName = "Guest Student";
                 }
-                studentName = name.trim();
+
                 startQuiz();
             } catch (e) { notify("Error", "red"); }
         }
