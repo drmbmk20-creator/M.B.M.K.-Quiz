@@ -1,3 +1,4 @@
+// @MBMK-FILE: GITHUB+SERVER | This file is used by both GitHub Pages and Local Server
 const CACHE_NAME = 'mbmk-v1';
 const urlsToCache = [
     './',

@@ -1,3 +1,4 @@
+// @MBMK-FILE: GITHUB+SERVER | This file is used by both GitHub Pages and Local Server
 function generateBarcode() {
     if (db.length === 0) {
         notify("No content to export", "red");
@@ -11,12 +12,12 @@ function generateBarcode() {
 
     // ✅ ضغط البيانات قبل التشفير
     const jsonString = JSON.stringify(finalData);
-    
+
     // ✅ تشفير بـ Base64 لتقليل الحجم
     const compressed = btoa(unescape(encodeURIComponent(jsonString)));
-    
+
     const win = window.open('', '_blank', 'width=800,height=900');
-    
+
     if (!win) {
         notify("Popup blocked! Please allow popups.", "red");
         return;

@@ -1,3 +1,4 @@
+// @MBMK-FILE: GITHUB+SERVER | This file is used by both GitHub Pages and Local Server
 // ═══════════════════════════════════════════════════════════
 // 👋 M.B.M.K. GESTURE CONTROL SYSTEM v4.0 - MEDIAPIPE V2
 // نظام التحكم بالإيماءات - ترقية MediaPipe v2 مع 3D Tracking
@@ -8,7 +9,7 @@ const GESTURE_CONFIG = {
     VIDEO_HEIGHT: 480,
     MIN_DETECTION_CONFIDENCE: 0.90,      // ⬆️ رفع الدقة
     MIN_TRACKING_CONFIDENCE: 0.90,       // ⬆️ رفع الدقة
-    AUTO_CONFIRM_DELAY: 1500,
+    AUTO_CONFIRM_DELAY: 1000,
     SELECTION_COOLDOWN: 2000,
 
     // ✨ إعدادات 3D الجديدة
@@ -382,15 +383,20 @@ class GestureController {
         this.canvasElement.height = GESTURE_CONFIG.VIDEO_HEIGHT;
         this.canvasElement.style.cssText = `
             position: fixed;
-            top: 20px;
-            right: 20px;
-            width: 180px;
-            height: 135px;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 160px;
+            height: 120px;
             border: 2px solid #06b6d4;
-            border-radius: 12px;
+            border-radius: 20px;
             z-index: 100;
-            box-shadow: 0 10px 30px rgba(6, 182, 212, 0.4);
-            background: rgba(15, 23, 42, 0.95);
+            box-shadow: 0 10px 40px rgba(6, 182, 212, 0.4);
+            background: rgba(15, 23, 42, 0.9);
+            pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            opacity: 0;
+            display: none;
         `;
         document.body.appendChild(this.canvasElement);
         this.canvasCtx = this.canvasElement.getContext('2d', { alpha: true });
@@ -711,6 +717,10 @@ class GestureController {
         this.startDetectionLoop();
         if (this.canvasElement) {
             this.canvasElement.style.display = 'block';
+            setTimeout(() => {
+                const isVisible = window.cameraVisible !== false;
+                this.canvasElement.style.opacity = isVisible ? '1' : '0';
+            }, 10);
         }
         console.log('✅ Gesture Control v4.0 (MediaPipe v2) Started');
     }
@@ -728,8 +738,14 @@ class GestureController {
         this.stop();
 
         if (this.videoElement && this.videoElement.srcObject) {
-            this.videoElement.srcObject.getTracks().forEach(track => track.stop());
+            const tracks = this.videoElement.srcObject.getTracks();
+            tracks.forEach(track => {
+                track.stop();
+                console.log('📷 Camera track stopped:', track.kind);
+            });
+            this.videoElement.srcObject = null;
             this.videoElement.remove();
+            this.videoElement = null;
         }
 
         if (this.canvasElement) {
