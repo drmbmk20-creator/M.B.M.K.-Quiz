@@ -2217,15 +2217,20 @@
         }
 
         async function joinPollRoom() {
+            console.log('🎯 JOIN POLL ROOM CLICKED');
             const code = document.getElementById('pollCodeInput').value.trim();
+            console.log('Code entered:', code);
             if (code.length !== 6) {
-                notify('Please enter a 6-digit code', 'red');
+                console.log('❌ Code length invalid:', code.length);
+                alert('Please enter a 6-digit code');
                 return;
             }
 
             // Check if server is available
+            console.log('SERVER_URL:', SERVER_URL);
             if (!SERVER_URL) {
-                notify('⚠️ Poll feature requires local server! Please open from https://localhost:3000', 'red');
+                console.log('❌ No server URL available');
+                alert('⚠️ Poll feature requires local server!\n\nPlease open from:\nhttps://localhost:3000/index.html');
                 return;
             }
 
@@ -2239,12 +2244,14 @@
                     return;
                 }
 
+                console.log('✅ Room found! Joining...');
                 currentPollCode = code;
                 closePollJoinModal();
                 showPollView();
                 startPollPolling();
             } catch (error) {
-                notify('Error joining room', 'red');
+                console.error('❌ Error joining room:', error);
+                alert('Error joining room!\n\nMake sure:\n1. Server is running\n2. Room code is correct\n3. You opened from https://localhost:3000');
             }
         }
 
